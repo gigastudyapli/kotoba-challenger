@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
+<title>ことばチャレンジャー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--font:"M PLUS Rounded 1c","Yu Gothic",Meiryo,sans-serif;--text:#334155;--muted:#64748b;--blue:#3b82f6;--green:#22c55e;--yellow:#fbbf24;--red:#ef4444;--border:#cbd5e1;--board:#174f3b}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--board);font-family:var(--font);color:var(--text)}
+button{font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.screen{display:none;width:100%;height:100%}.screen.active{display:flex}
+.sn-title{margin:0;font-size:36px;font-weight:900;color:#fff;text-align:center;line-height:1}
+.sn-btn{min-height:54px;padding:2px 8px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--border);border-radius:14px;background:#fff;color:var(--text);font-size:28px;font-weight:900;line-height:1;cursor:pointer;box-shadow:0 2px 5px #0002}
+.sn-btn:hover{transform:translateY(-2px)}.sn-btn:disabled{opacity:.42;cursor:default;transform:none}
+.sn-success{background:#22c55e;border-color:#16a34a;color:#fff}.sn-warning{background:#fbbf24;border-color:#f59e0b;color:#713f12}.sn-danger{background:#ef4444;border-color:#dc2626;color:#fff}
+.sn-home-btn{min-height:40px;padding:2px 10px;border:2px solid #93c5fd;border-radius:999px;background:#fff;color:#2563eb;font-size:24px;font-weight:900;line-height:1;cursor:pointer}
+#topScreen{align-items:center;justify-content:center;flex-direction:column;gap:22px}
+#topScreen>.sn-title{font-size:70px}
+.topBtns{display:grid;grid-template-columns:repeat(4,minmax(215px,290px));gap:16px}
+.bigBtn{min-height:125px;padding:1%;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1}
+.bigBtnMain,.bigBtnSub{font-size:38px;font-weight:900;letter-spacing:-.06em;line-height:1}
+.hira{background:#fee2e2;border-color:#ef4444}.shiri{background:#dbeafe;border-color:#3b82f6}.kata{background:#dcfce7;border-color:#22c55e}.battle{background:#fef9c3;border-color:#eab308}
+.helpBtn{position:fixed;right:18px;top:14px;font-size:20px}
+#topScreen>.katakanaMenuTitle{font-size:54px}
+#setupScreen,#battleSetupScreen{align-items:center;justify-content:center;flex-direction:column;gap:9px}
+.optionBlock{display:flex;flex-direction:column;align-items:center}.optionLabel{font-size:22px;line-height:1;font-weight:900;color:#fff;text-align:center;margin:2px 0 4px}.optionRow{display:flex;gap:10px;justify-content:center}
+.optionBtn{min-width:205px;min-height:64px;padding:1px 3px;font-size:32px;line-height:1;background:#fff;font-weight:900}
+.optionBtn.selected{background:#dbeafe;border-color:#3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.3)}
+#startBtn,#battleStartBtn{min-width:260px!important;min-height:58px;padding:1px 8px!important;font-size:38px!important;line-height:1}
+#gameScreen{flex-direction:column;padding:8px 14px 10px;gap:7px}.header{height:64px;display:grid;grid-template-columns:1fr 2fr 1.25fr;align-items:center}.headerLeft{display:flex;gap:7px}.gameName{text-align:center;font-size:30px;font-weight:900;color:#fff}
+.rightStatus{display:flex;justify-content:center;align-items:center;gap:14px}.score{font-size:70px;font-weight:900;color:#fde047;white-space:nowrap;line-height:1;text-align:center}
+.topGameArea{height:170px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.75fr);gap:10px}
+.wordArea,.completedArea{background:#fff;border:2px solid #e2e8f0;border-radius:20px;box-shadow:0 4px 12px #0002}
+.wordArea{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}.prompt{font-size:22px;font-weight:800;color:var(--muted);min-height:28px}.currentWord{font-size:64px;line-height:1.05;font-weight:900;letter-spacing:.08em;min-height:70px}.message{font-size:21px;font-weight:900;min-height:26px;color:#dc2626}
+.completedArea{display:flex;flex-direction:column;overflow:hidden}.completedTitle{padding:3px 6px;text-align:center;background:#eff6ff;border-bottom:2px solid #e2e8f0;font-size:20px;font-weight:900}.completedWords{flex:1;overflow-y:auto;padding:5px;display:flex;align-content:flex-start;flex-wrap:wrap;gap:4px}.wordChip{padding:2px 7px;border:2px solid #bbf7d0;border-radius:999px;background:#f0fdf4;font-size:19px;font-weight:900}
+.controls{height:54px;display:flex;justify-content:center;gap:8px}.controls .sn-btn{min-height:50px;padding:2px 8px;font-size:30px}
+.timerClock{position:relative;width:58px;height:58px;border-radius:50%;background:#fff;border:4px solid #fde047;box-shadow:0 2px 7px #0004;flex:none}.timerClock.hidden{display:none}.timerClock.warning{border-color:#ef4444;background:#fff1f2}
+.timerClock::before{content:"";position:absolute;left:50%;top:5px;width:4px;height:23px;background:#ef4444;border-radius:3px;transform-origin:50% 24px;transform:translateX(-50%) rotate(var(--timer-angle,0deg))}
+.timerClock::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;background:#334155;border-radius:50%;transform:translate(-50%,-50%)}.timerNumber{position:absolute;left:50%;top:50%;transform:translate(-50%,4px);font-size:14px;font-weight:900;color:#334155;line-height:1}
+.timerMark{position:absolute;background:#64748b}.timerMark.t12{width:2px;height:6px;left:50%;top:1px;transform:translateX(-50%)}.timerMark.t3{width:6px;height:2px;right:1px;top:50%;transform:translateY(-50%)}.timerMark.t6{width:2px;height:6px;left:50%;bottom:1px;transform:translateX(-50%)}.timerMark.t9{width:6px;height:2px;left:1px;top:50%;transform:translateY(-50%)}
+.keyboardWrap{flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center;gap:9px}.kanaTable{flex:1;min-width:0;display:flex;flex-direction:row-reverse;justify-content:center;gap:6.25px}.kanaCol{flex:1;min-width:0;max-width:100px;display:grid;grid-template-rows:repeat(6,1fr);gap:4px}
+.kanaBtn{min-width:0;min-height:0;padding:1%;border:2px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:clamp(42.5px,5.5vw,72.5px);line-height:1;font-weight:900;cursor:pointer;user-select:none;box-shadow:0 2px 4px #0001}
+.kanaBtn:hover{background:#eff6ff;border-color:#93c5fd}.kanaBtn:disabled{background:#e2e8f0;color:#a3aab5;cursor:default}.blank{visibility:hidden}
+.extraPanel{width:109px;height:50%;align-self:center;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:5px}.extraBtn{min-width:0;min-height:0;padding:1%;border:2px solid #fbbf24;border-radius:10px;background:#fffbeb;color:var(--text);font-size:27px;line-height:1;font-weight:900;cursor:pointer}
+#battleScreen{flex-direction:column;padding:8px 14px 10px;gap:7px}.battleHeader{height:64px;display:grid;grid-template-columns:1fr 2fr 1.25fr;align-items:center}.battleTitle{text-align:center;font-size:32px;font-weight:900;color:#fff}.battleHeaderRight{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.battlePlayers{height:185px;display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px}.playerPanel{background:#fff;border-radius:18px;padding:6px;border:4px solid transparent;display:flex;flex-direction:column;min-height:0}.playerPanel.activeTurn{border-color:#fde047;box-shadow:0 0 0 4px #fde04755}
+.playerName{text-align:center;font-size:25px;font-weight:900}.playerScore{text-align:center;font-size:36px;font-weight:900;color:#f59e0b}.playerWords{flex:1;overflow-y:auto;display:flex;align-content:flex-start;flex-wrap:wrap;gap:4px;padding:3px}
+.battleCenter{background:#fff;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}.turnLabel{font-size:25px;font-weight:900;color:#2563eb}.battleRuleLabel{font-size:18px;font-weight:900;color:#64748b;min-height:22px}.battleCurrent{font-size:55px;font-weight:900;letter-spacing:.08em;min-height:66px}.battleMessage{font-size:19px;font-weight:900;color:#dc2626;min-height:24px}
+.battleControls{height:52px;display:flex;justify-content:center;gap:8px}.battleControls .sn-btn{min-height:48px;padding:2px 8px;font-size:29px}
+#helpScreen{flex-direction:column;padding:14px 20px;gap:10px}.helpHeader{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center}.helpTabs{display:flex;justify-content:center;gap:10px}.helpTab.selected{background:#3b82f6;color:#fff;border-color:#2563eb}.helpContent{flex:1;min-height:0;overflow-y:auto;background:#fff;border-radius:20px;padding:18px 24px}.helpSection{margin-bottom:22px}.helpSection h2{margin:0 0 7px;color:#2563eb;font-size:25px}.helpSection p{font-size:19px;line-height:1.7;font-weight:700}
+.successFlash{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;pointer-events:none}.successFlash.show{display:flex}.successFlashInner{padding:22px 42px;border:8px solid #fde047;border-radius:32px;background:#fffffff8;color:#16a34a;font-size:84px;font-weight:900;box-shadow:0 14px 40px #0006;animation:successPop .2s ease-out}
+@keyframes successPop{0%{transform:scale(.45) rotate(-4deg)}70%{transform:scale(1.12) rotate(2deg)}100%{transform:scale(1)}}
+.finishOverlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:#0008}.finishOverlay.show{display:flex}.finishBox{min-width:460px;max-width:90vw;padding:24px;background:#fff;border:7px solid #fde047;border-radius:30px;text-align:center}.finishScore{font-size:54px;font-weight:900;color:#f59e0b}.finishMessage{margin-top:8px;font-size:30px;font-weight:900}.finishButtons{margin-top:18px;display:flex;justify-content:center;gap:10px}
+@media(max-width:1000px){#topScreen>.sn-title{font-size:56px}.topBtns{grid-template-columns:repeat(2,minmax(220px,290px))}.kanaBtn{font-size:clamp(34px,5vw,58px)}}
+</style>
+</head>
+<body>
+<div id="topScreen" class="screen active">
+ <button class="sn-btn helpBtn" onclick="openHelp()">？ つかいかた</button>
+ <h1 class="sn-title">ことばチャレンジャー</h1>
+ <div class="topBtns">
+  <button class="sn-btn bigBtn hira" onclick="chooseGame('word','hira')"><div class="bigBtnMain">😊 50音</div><div class="bigBtnSub">チャレンジャー</div></button>
+  <button class="sn-btn bigBtn shiri" onclick="chooseGame('shiritori','hira')"><div class="bigBtnMain">😊 しりとり</div><div class="bigBtnSub">チャレンジャー</div></button>
+  <button class="sn-btn bigBtn kata" onclick="showKatakanaMenu()"><div class="bigBtnMain">😊 カタカナ</div><div class="bigBtnSub">チャレンジャー</div></button>
+  <button class="sn-btn bigBtn battle" onclick="openBattleSetup()"><div class="bigBtnMain">😀 対戦 😊</div><div class="bigBtnSub">チャレンジャー</div></button>
+ </div>
+</div>
+
+<div id="setupScreen" class="screen">
+ <h1 id="setupTitle" class="sn-title"></h1>
+ <div id="levelArea" class="optionBlock"><div class="optionLabel">レベル</div><div class="optionRow">
+  <button id="beginnerBtn" class="sn-btn optionBtn" onclick="selectLevel('beginner')">初級<br>あ・か・さ行</button>
+  <button id="normalBtn" class="sn-btn optionBtn" onclick="selectLevel('normal')">ぜんぶ<br>50音</button>
+ </div></div>
+ <div id="useModeArea" class="optionBlock"><div class="optionLabel">もじ</div><div class="optionRow">
+  <button id="remainBtn" class="sn-btn optionBtn" onclick="selectUseMode('remain')">もじが<br>のこる</button>
+  <button id="vanishBtn" class="sn-btn optionBtn" onclick="selectUseMode('vanish')">もじが<br>きえる</button>
+ </div></div>
+ <div class="optionBlock"><div class="optionLabel">じかん</div><div class="optionRow">
+  <button id="freeTimeBtn" class="sn-btn optionBtn" onclick="selectTimeMode('free')">じっくり</button>
+  <button id="minuteTimeBtn" class="sn-btn optionBtn" onclick="selectTimeMode('minute')">⏱ 1分</button>
+ </div></div>
+ <button id="startBtn" class="sn-btn sn-success" onclick="startGame()" disabled>スタート！</button>
+ <button class="sn-home-btn" onclick="goTop()">← もどる</button>
+</div>
+
+<div id="battleSetupScreen" class="screen">
+ <h1 class="sn-title">対戦チャレンジャー</h1>
+ <div class="optionBlock"><div class="optionLabel">たいせんあいて</div><div class="optionRow">
+  <button id="cpuBtn" class="sn-btn optionBtn" onclick="selectBattleOpponent('cpu')">💻 コンピューター</button>
+  <button id="humanBtn" class="sn-btn optionBtn" onclick="selectBattleOpponent('human')">👥 ふたり</button>
+ </div></div>
+ <div class="optionBlock"><div class="optionLabel">もじ</div><div class="optionRow">
+  <button id="battleHiraBtn" class="sn-btn optionBtn" onclick="selectBattleScript('hira')">ひらがな</button>
+  <button id="battleKataBtn" class="sn-btn optionBtn" onclick="selectBattleScript('kata')">カタカナ</button>
+ </div></div>
+ <div class="optionBlock"><div class="optionLabel">ルール</div><div class="optionRow">
+  <button id="battleWordBtn" class="sn-btn optionBtn" onclick="selectBattleGame('word')">ことば</button>
+  <button id="battleShiriBtn" class="sn-btn optionBtn" onclick="selectBattleGame('shiritori')">しりとり</button>
+ </div></div>
+ <div class="optionBlock"><div class="optionLabel">もじのつかいかた</div><div class="optionRow">
+  <button id="battleRemainBtn" class="sn-btn optionBtn" onclick="selectBattleUseMode('remain')">もじが のこる</button>
+  <button id="battleVanishBtn" class="sn-btn optionBtn" onclick="selectBattleUseMode('vanish')">もじが きえる</button>
+ </div></div>
+ <div class="optionBlock"><div class="optionLabel">じかん</div><div class="optionRow">
+  <button id="battleFreeBtn" class="sn-btn optionBtn" onclick="selectBattleTimeMode('free')">じっくり</button>
+  <button id="battleMinuteBtn" class="sn-btn optionBtn" onclick="selectBattleTimeMode('minute')">⏱ 1分</button>
+ </div></div>
+ <button id="battleStartBtn" class="sn-btn sn-success" onclick="startBattle()" disabled>たいせんスタート！</button>
+ <button class="sn-home-btn" onclick="goTop()">← もどる</button>
+</div>
+
+<div id="gameScreen" class="screen">
+ <div class="header">
+  <div class="headerLeft"><button class="sn-home-btn" onclick="goTop()">トップ</button><button class="sn-btn" onclick="restart()">やりなおす</button></div>
+  <div id="gameName" class="gameName"></div>
+  <div class="rightStatus"><div id="gameTimer" class="timerClock hidden"><span class="timerMark t12"></span><span class="timerMark t3"></span><span class="timerMark t6"></span><span class="timerMark t9"></span><span id="gameTimerNumber" class="timerNumber">60</span></div><div id="score" class="score">0てん</div></div>
+ </div>
+ <div class="topGameArea">
+  <div class="wordArea"><div id="prompt" class="prompt"></div><div id="currentWord" class="currentWord"></div><div id="message" class="message"></div></div>
+  <div class="completedArea"><div class="completedTitle">できた ことば</div><div id="completedWords" class="completedWords"></div></div>
+ </div>
+ <div class="controls"><button class="sn-btn" onclick="undoChar()">↩ 1もどす</button><button class="sn-btn sn-danger" onclick="clearWord()">ぜんぶけす</button><button class="sn-btn sn-success" onclick="submitWord()">できた！</button><button class="sn-btn sn-warning" onclick="giveUp()">あきらめる</button></div>
+ <div class="keyboardWrap"><div id="extraPanel" class="extraPanel"></div><div id="kanaTable" class="kanaTable"></div></div>
+</div>
+
+<div id="battleScreen" class="screen">
+ <div class="battleHeader"><div><button class="sn-home-btn" onclick="goTop()">トップ</button></div><div class="battleTitle">⚔ 対戦チャレンジャー</div><div class="battleHeaderRight"><div id="battleTimer" class="timerClock hidden"><span class="timerMark t12"></span><span class="timerMark t3"></span><span class="timerMark t6"></span><span class="timerMark t9"></span><span id="battleTimerNumber" class="timerNumber">60</span></div><button class="sn-btn sn-warning" onclick="finishBattle()">おわる</button></div></div>
+ <div class="battlePlayers">
+  <div id="player1Panel" class="playerPanel activeTurn"><div id="player1Name" class="playerName">プレイヤー1</div><div id="player1Score" class="playerScore">0てん</div><div id="player1Words" class="playerWords"></div></div>
+  <div class="battleCenter"><div id="battleTurnLabel" class="turnLabel"></div><div id="battleRuleLabel" class="battleRuleLabel"></div><div id="battleCurrent" class="battleCurrent"></div><div id="battleMessage" class="battleMessage"></div></div>
+  <div id="player2Panel" class="playerPanel"><div id="player2Name" class="playerName">プレイヤー2</div><div id="player2Score" class="playerScore">0てん</div><div id="player2Words" class="playerWords"></div></div>
+ </div>
+ <div class="battleControls"><button class="sn-btn" onclick="battleUndo()">↩ 1もどす</button><button class="sn-btn sn-danger" onclick="battleClear()">ぜんぶけす</button><button class="sn-btn sn-success" onclick="battleSubmit()">できた！</button></div>
+ <div class="keyboardWrap"><div id="battleExtraPanel" class="extraPanel"></div><div id="battleKanaTable" class="kanaTable"></div></div>
+</div>
+
+<div id="helpScreen" class="screen">
+ <div class="helpHeader"><div><button class="sn-home-btn" onclick="goTop()">← トップ</button></div><h1 class="sn-title">つかいかた</h1><div></div></div>
+ <div class="helpTabs"><button id="studentHelpBtn" class="sn-btn helpTab selected" onclick="showHelp('student')">児童向け</button><button id="teacherHelpBtn" class="sn-btn helpTab" onclick="showHelp('teacher')">教員向け</button></div>
+ <div id="helpContent" class="helpContent"></div>
+</div>
+
+<div id="successFlash" class="successFlash"><div id="successFlashInner" class="successFlashInner"></div></div>
+<div id="finishOverlay" class="finishOverlay"><div class="finishBox"><div id="finishScore" class="finishScore"></div><div id="finishMessage" class="finishMessage"></div><div class="finishButtons"><button class="sn-btn sn-success" onclick="closeFinish()">もういちど</button><button class="sn-home-btn" onclick="goTopFromFinish()">トップにもどる</button></div></div></div>
+
+<script>
+let WORD_SET=new Set();
+const EXTRA_WORDS=new Set(["さた","ゆめみ","まんとひひ","ごりら"]);
+function kataToHira_(text){return [...String(text||"")].map(ch=>{const c=ch.charCodeAt(0);return c>=0x30A1&&c<=0x30F6?String.fromCharCode(c-0x60):ch}).join("")}
+function normalizeDictionaryWord_(word){return kataToHira_(String(word||"").trim())}
+function installDictionary_(words){WORD_SET=new Set();if(Array.isArray(words))words.forEach(word=>{const w=normalizeDictionaryWord_(word);if(w)WORD_SET.add(w)});EXTRA_WORDS.forEach(word=>WORD_SET.add(word))}
+function isValidLocalWord_(word){return WORD_SET.has(normalizeDictionaryWord_(word))}
+
+let gameType='word',scriptType='hira',useMode='',levelMode='',timeMode='';
+let score=0,current=[],currentSources=[],permanentlyUsed=new Set(),completedWords=[],requiredStart='';
+let dictionaryReady=false,dictionaryLoading=false,dictionaryCallbacks=[],gameActive=false;
+let battleOpponent='',battleScript='',battleGameType='',battleUseMode='',battleTimeMode='';
+let battleTurn=1,battleCurrent=[],battleCurrentSources=[],battleScores=[0,0],battleWords=[[],[]],battleRequiredStart='';
+let battleUsedSources=new Set(),cpuWordList=[],battleActive=false;
+let timerInterval=null,timerDeadline=0,timerContext='';
+
+const hiraCols=[['あ','い','う','え','お',''],['か','き','く','け','こ',''],['さ','し','す','せ','そ',''],['た','ち','つ','て','と',''],['な','に','ぬ','ね','の',''],['は','ひ','ふ','へ','ほ',''],['ま','み','む','め','も',''],['や','','ゆ','','よ',''],['ら','り','る','れ','ろ',''],['わ','','','','ん','']];
+const hiraBeginnerCols=[['あ','い','う','え','お',''],['か','き','く','け','こ',''],['さ','し','す','せ','そ','']];
+const kataCols=[['ア','イ','ウ','エ','オ',''],['カ','キ','ク','ケ','コ',''],['サ','シ','ス','セ','ソ',''],['タ','チ','ツ','テ','ト',''],['ナ','ニ','ヌ','ネ','ノ',''],['ハ','ヒ','フ','ヘ','ホ',''],['マ','ミ','ム','メ','モ',''],['ヤ','','ユ','','ヨ',''],['ラ','リ','ル','レ','ロ',''],['ワ','','','','ン','']];
+const hiraExtra=['゛','゜','ゃ','ゅ','ょ','っ','ぁ','ぃ','ぅ','ぇ','ぉ'];
+const kataExtra=['゛','゜','ャ','ュ','ョ','ッ','ァ','ィ','ゥ','ェ','ォ','ー'];
+const dakuten={'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご','さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ','た':'だ','ち':'ぢ','つ':'づ','て':'で','と':'ど','は':'ば','ひ':'び','ふ':'ぶ','へ':'べ','ほ':'ぼ','カ':'ガ','キ':'ギ','ク':'グ','ケ':'ゲ','コ':'ゴ','サ':'ザ','シ':'ジ','ス':'ズ','セ':'ゼ','ソ':'ゾ','タ':'ダ','チ':'ヂ','ツ':'ヅ','テ':'デ','ト':'ド','ハ':'バ','ヒ':'ビ','フ':'ブ','ヘ':'ベ','ホ':'ボ','ウ':'ヴ'};
+const handakuten={'は':'ぱ','ひ':'ぴ','ふ':'ぷ','へ':'ぺ','ほ':'ぽ','ハ':'パ','ヒ':'ピ','フ':'プ','ヘ':'ペ','ホ':'ポ'};
+const SOURCE_MAP={};Object.keys(dakuten).forEach(k=>SOURCE_MAP[dakuten[k]]=k);Object.keys(handakuten).forEach(k=>SOURCE_MAP[handakuten[k]]=k);
+const HELP_DATA={
+ student:[{title:'50音チャレンジャー',text:'もじをタップして、2～5もじのことばをつくります。'},{title:'1分チャレンジ',text:'60びょうのあいだに、できるだけたくさんのポイントをとります。'},{title:'初級',text:'「あ・か・さ行」の15もじだけであそびます。'},{title:'しりとりチャレンジャー',text:'まえのことばの最後のもじから、つぎのことばを作ります。'},{title:'対戦チャレンジャー',text:'ふたり合わせて60びょうです。じかんがなくなるまで交互にことばを作ります。'}],
+ teacher:[{title:'1分モード',text:'全ゲームで選択できます。通常ゲームは60秒、対戦は両者合わせて60秒です。'},{title:'タイマー',text:'画面右上のアナログ時計が60秒からカウントダウンします。残り10秒で赤表示になります。'},{title:'対戦',text:'人間同士・コンピューター対戦とも、1分モードでは共通の60秒を使用します。'},{title:'辞書判定',text:'GitHub Pages版ではリポジトリ内の辞書JSONを起動時に読み込み、その後は端末内で即時判定します。'}]
+};
+
+async function loadDictionary(callback){
+ if(callback){if(dictionaryReady){callback();return}dictionaryCallbacks.push(callback)}
+ if(dictionaryReady||dictionaryLoading)return;
+ dictionaryLoading=true;
+ try{
+  const res=await fetch('./ことばチャレンジャー辞書.json',{cache:'no-store'});
+  if(!res.ok)throw new Error('dictionary '+res.status);
+  const words=await res.json();installDictionary_(words);dictionaryReady=true;cpuWordList=[...WORD_SET].filter(w=>w.length>=2&&w.length<=5);
+  const list=dictionaryCallbacks.slice();dictionaryCallbacks=[];list.forEach(fn=>fn());
+ }catch(e){console.error(e);dictionaryCallbacks=[];alert('辞書ファイル「ことばチャレンジャー辞書.json」を index.html と同じ場所に置いてください。')}
+ finally{dictionaryLoading=false}
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function stopCountdown(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}timerContext=''}
+function hideTimers(){document.getElementById('gameTimer').classList.add('hidden');document.getElementById('battleTimer').classList.add('hidden')}
+function startCountdown(context){stopCountdown();timerContext=context;timerDeadline=Date.now()+60000;const clock=context==='battle'?document.getElementById('battleTimer'):document.getElementById('gameTimer');clock.classList.remove('hidden');clock.classList.remove('warning');updateCountdown();timerInterval=setInterval(updateCountdown,100)}
+function updateCountdown(){if(!timerContext)return;const remaining=Math.max(0,timerDeadline-Date.now()),seconds=Math.ceil(remaining/1000),elapsed=Math.min(60000,60000-remaining),angle=(elapsed/60000)*360;const clock=timerContext==='battle'?document.getElementById('battleTimer'):document.getElementById('gameTimer'),number=timerContext==='battle'?document.getElementById('battleTimerNumber'):document.getElementById('gameTimerNumber');clock.style.setProperty('--timer-angle',angle+'deg');number.textContent=seconds;clock.classList.toggle('warning',seconds<=10);if(remaining<=0){const c=timerContext;stopCountdown();c==='battle'?timedBattleFinish():timedGameFinish()}}
+function timedGameFinish(){if(!gameActive)return;gameActive=false;setGameControlsEnabled(false);document.getElementById('finishScore').textContent=score+'てん！';document.getElementById('finishMessage').textContent='⏱ タイムアップ！ がんばったね！';document.getElementById('finishOverlay').classList.add('show')}
+function timedBattleFinish(){if(!battleActive)return;battleActive=false;setBattleKeyboardEnabled(false);const a=battleScores[0],b=battleScores[1];let result='ひきわけ！';if(a>b)result=battleOpponent==='cpu'?'あなたの かち！':'プレイヤー1の かち！';else if(b>a)result=battleOpponent==='cpu'?'コンピューターの かち！':'プレイヤー2の かち！';document.getElementById('finishScore').textContent=a+' － '+b;document.getElementById('finishMessage').textContent='⏱ タイムアップ！　'+result;document.getElementById('finishOverlay').classList.add('show')}
+function setGameControlsEnabled(enabled){document.querySelectorAll('#kanaTable button,#extraPanel button,.controls button').forEach(b=>b.disabled=!enabled);if(enabled)refreshKeyboard()}
+function goTop(){stopCountdown();gameActive=false;battleActive=false;hideTimers();document.getElementById('finishOverlay').classList.remove('show');document.getElementById('successFlash').classList.remove('show');restoreTop();showScreen('topScreen')}
+
+function chooseGame(type,script){
+ gameType=type;scriptType=script;useMode='';levelMode='';timeMode='';
+ ['remainBtn','vanishBtn','beginnerBtn','normalBtn','freeTimeBtn','minuteTimeBtn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+ document.getElementById('startBtn').disabled=true;
+ if(type==='shiritori'){useMode='remain';levelMode='normal';document.getElementById('levelArea').style.display='none';document.getElementById('useModeArea').style.display='none';document.getElementById('setupTitle').textContent=(script==='hira'?'ひらがな':'カタカナ')+' しりとりチャレンジ'}
+ else{document.getElementById('useModeArea').style.display='flex';document.getElementById('levelArea').style.display=script==='hira'?'flex':'none';if(script==='kata')levelMode='normal';document.getElementById('setupTitle').textContent=(script==='hira'?'ひらがな':'カタカナ')+' ことばチャレンジ'}
+ showScreen('setupScreen');updateStartButton();
+}
+function selectLevel(v){levelMode=v;document.getElementById('beginnerBtn').classList.toggle('selected',v==='beginner');document.getElementById('normalBtn').classList.toggle('selected',v==='normal');updateStartButton()}
+function selectUseMode(v){useMode=v;document.getElementById('remainBtn').classList.toggle('selected',v==='remain');document.getElementById('vanishBtn').classList.toggle('selected',v==='vanish');updateStartButton()}
+function selectTimeMode(v){timeMode=v;document.getElementById('freeTimeBtn').classList.toggle('selected',v==='free');document.getElementById('minuteTimeBtn').classList.toggle('selected',v==='minute');updateStartButton()}
+function updateStartButton(){const levelOK=gameType==='shiritori'||scriptType==='kata'||!!levelMode,useOK=gameType==='shiritori'||!!useMode;document.getElementById('startBtn').disabled=!levelOK||!useOK||!timeMode}
+
+function startGame(){
+ stopCountdown();gameActive=true;score=0;current=[];currentSources=[];permanentlyUsed.clear();completedWords=[];requiredStart='';document.getElementById('score').textContent='0てん';hideTimers();
+ let title=scriptType==='hira'?'ひらがな':'カタカナ';if(gameType==='shiritori')title+=' しりとり';else if(levelMode==='beginner')title+=' 初級チャレンジ';else title+=' ことばチャレンジ';if(timeMode==='minute')title+=' ⏱1分';
+ document.getElementById('gameName').textContent=title;document.getElementById('kanaTable').innerHTML='';document.getElementById('extraPanel').innerHTML='';renderCompletedWords();showScreen('gameScreen');
+ const ready=()=>{finishGameStart();setGameControlsEnabled(true);if(timeMode==='minute')startCountdown('game')};
+ if(dictionaryReady)ready();else{showMessage('じしょを よみこんでいます…');loadDictionary(ready)}
+}
+function finishGameStart(){buildKeyboard();updateWord();updatePrompt();clearMessage()}
+function buildKeyboard(){const cols=scriptType==='hira'?(levelMode==='beginner'?hiraBeginnerCols:hiraCols):kataCols;buildKanaKeyboard(cols,scriptType==='hira'?hiraExtra:kataExtra,'kanaTable','extraPanel',addChar,applyMark,scriptType==='hira'&&levelMode==='beginner');refreshKeyboard()}
+function buildKanaKeyboard(cols,extras,tableId,extraId,charFn,markFn,noExtra){
+ const table=document.getElementById(tableId),extra=document.getElementById(extraId);table.innerHTML='';extra.innerHTML='';
+ cols.forEach(col=>{const c=document.createElement('div');c.className='kanaCol';col.forEach(ch=>{const b=document.createElement('button');if(!ch){b.className='kanaBtn blank';b.disabled=true}else{b.className='kanaBtn';b.textContent=ch;b.dataset.char=ch;b.onclick=()=>charFn(ch,ch)}c.appendChild(b)});table.appendChild(c)});
+ if(noExtra){extra.style.display='none';return}extra.style.display='grid';
+ extras.forEach(ch=>{const b=document.createElement('button');b.className='extraBtn';b.textContent=ch;if(ch==='゛')b.onclick=()=>markFn('dakuten');else if(ch==='゜')b.onclick=()=>markFn('handakuten');else b.onclick=()=>charFn(ch,ch);extra.appendChild(b)});
+}
+function addChar(ch,source){if(!gameActive)return;if(current.length>=5){showMessage('5もじまでだよ');return}if(gameType==='shiritori'&&current.length===0&&requiredStart){const canBecome=ch===requiredStart||dakuten[ch]===requiredStart||handakuten[ch]===requiredStart;if(!canBecome){showMessage('「'+requiredStart+'」から はじめよう');return}}if(useMode==='vanish'&&(permanentlyUsed.has(source)||currentSources.includes(source)))return;current.push(ch);currentSources.push(source);updateWord();refreshKeyboard();clearMessage()}
+function applyMark(type){if(!gameActive)return;if(!current.length){showMessage('さきに もじを えらんでね');return}const i=current.length-1,map=type==='dakuten'?dakuten:handakuten;if(!map[current[i]]){showMessage('その もじには つけられないよ');return}current[i]=map[current[i]];updateWord();clearMessage()}
+function undoChar(){if(!gameActive||!current.length)return;current.pop();currentSources.pop();updateWord();refreshKeyboard();clearMessage()}
+function clearWord(){if(!gameActive)return;current=[];currentSources=[];updateWord();refreshKeyboard();clearMessage()}
+function updateWord(){document.getElementById('currentWord').textContent=current.join('')}
+function updatePrompt(){const p=document.getElementById('prompt');if(gameType==='word'){if(levelMode==='beginner')p.textContent='あ・か・さ行で ことばを つくろう！';else p.textContent=useMode==='vanish'?'つかった もじは きえていくよ':'ことばを つくろう！'}else p.textContent=requiredStart?'「'+requiredStart+'」から はじまる ことば':'さいしょの ことばを つくろう！'}
+function submitWord(){if(!gameActive)return;const word=current.join('');if(word.length<2){showMessage('2もじいじょうの ことばを つくろう');return}if(completedWords.includes(word)){showMessage('その ことばは もう つかったよ');return}if(gameType==='shiritori'&&requiredStart&&word[0]!==requiredStart){showMessage('「'+requiredStart+'」から はじめよう');return}if(!isValidLocalWord_(word)){showMessage('じしょにある ことばを つくろう');return}acceptWord(word)}
+function pointsFor(word){return word.length===2?20:word.length===3?30:word.length===4?50:100}
+function acceptWord(word){let points=pointsFor(word);if(useMode==='vanish')points*=2;score+=points;if(useMode==='vanish')currentSources.forEach(x=>permanentlyUsed.add(x));completedWords.push(word);renderCompletedWords();if(gameType==='shiritori'){const last=word[word.length-1],n=scriptType==='hira'?'ん':'ン';if(last===n){score=Math.max(0,score-10);requiredStart='';showMessage('「'+n+'」で おわった！ −10てん')}else{requiredStart=normalizeShiritoriStart(last);clearMessage()}}else clearMessage();document.getElementById('score').textContent=score+'てん';showSuccessFlash('💮 ＋'+points+'てん！');current=[];currentSources=[];updateWord();updatePrompt();refreshKeyboard()}
+function renderCompletedWords(){const box=document.getElementById('completedWords');box.innerHTML='';completedWords.forEach(word=>{const chip=document.createElement('div');chip.className='wordChip';chip.textContent=word;box.appendChild(chip)});box.scrollTop=box.scrollHeight}
+function refreshKeyboard(){document.querySelectorAll('#kanaTable .kanaBtn[data-char]').forEach(b=>{const ch=b.dataset.char;b.disabled=!gameActive||(useMode==='vanish'&&(permanentlyUsed.has(ch)||currentSources.includes(ch)))})}
+function normalizeShiritoriStart(ch){const map={'ゃ':'や','ゅ':'ゆ','ょ':'よ','ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','っ':'つ','ャ':'ヤ','ュ':'ユ','ョ':'ヨ','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ','ッ':'ツ','ー':''};return map[ch]!==undefined?map[ch]:ch}
+function restart(){stopCountdown();startGame()}
+function giveUp(){if(!gameActive)return;stopCountdown();gameActive=false;setGameControlsEnabled(false);document.getElementById('finishScore').textContent=score+'てんだったよ！';document.getElementById('finishMessage').textContent='がんばったね！';document.getElementById('finishOverlay').classList.add('show')}
+
+function openBattleSetup(){
+ stopCountdown();battleOpponent='';battleScript='';battleGameType='';battleUseMode='';battleTimeMode='';
+ ['cpuBtn','humanBtn','battleHiraBtn','battleKataBtn','battleWordBtn','battleShiriBtn','battleRemainBtn','battleVanishBtn','battleFreeBtn','battleMinuteBtn'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('selected');el.disabled=false});
+ document.getElementById('battleStartBtn').disabled=true;showScreen('battleSetupScreen');
+}
+function selectBattleOpponent(v){battleOpponent=v;document.getElementById('cpuBtn').classList.toggle('selected',v==='cpu');document.getElementById('humanBtn').classList.toggle('selected',v==='human');updateBattleStart()}
+function selectBattleScript(v){battleScript=v;document.getElementById('battleHiraBtn').classList.toggle('selected',v==='hira');document.getElementById('battleKataBtn').classList.toggle('selected',v==='kata');updateBattleStart()}
+function selectBattleGame(v){battleGameType=v;document.getElementById('battleWordBtn').classList.toggle('selected',v==='word');document.getElementById('battleShiriBtn').classList.toggle('selected',v==='shiritori');const vanishBtn=document.getElementById('battleVanishBtn');if(v==='shiritori'){battleUseMode='remain';vanishBtn.disabled=true;vanishBtn.classList.remove('selected');document.getElementById('battleRemainBtn').classList.add('selected')}else vanishBtn.disabled=false;updateBattleStart()}
+function selectBattleUseMode(v){if(battleGameType==='shiritori'&&v==='vanish')return;battleUseMode=v;document.getElementById('battleRemainBtn').classList.toggle('selected',v==='remain');document.getElementById('battleVanishBtn').classList.toggle('selected',v==='vanish');updateBattleStart()}
+function selectBattleTimeMode(v){battleTimeMode=v;document.getElementById('battleFreeBtn').classList.toggle('selected',v==='free');document.getElementById('battleMinuteBtn').classList.toggle('selected',v==='minute');updateBattleStart()}
+function updateBattleStart(){document.getElementById('battleStartBtn').disabled=!battleOpponent||!battleScript||!battleGameType||!battleUseMode||!battleTimeMode}
+
+function startBattle(){
+ stopCountdown();battleActive=true;battleTurn=1;battleCurrent=[];battleCurrentSources=[];battleScores=[0,0];battleWords=[[],[]];battleRequiredStart='';battleUsedSources.clear();hideTimers();
+ document.getElementById('player1Name').textContent=battleOpponent==='cpu'?'あなた':'プレイヤー1';document.getElementById('player2Name').textContent=battleOpponent==='cpu'?'コンピューター':'プレイヤー2';showScreen('battleScreen');
+ const ready=()=>{buildBattleKeyboard();updateBattleDisplay();setBattleKeyboardEnabled(true);if(battleTimeMode==='minute')startCountdown('battle')};
+ if(dictionaryReady)ready();else{battleMessage('じしょを よみこんでいます…');loadDictionary(()=>{ready();battleMessage('')})}
+}
+function buildBattleKeyboard(){const cols=battleScript==='hira'?hiraCols:kataCols,extras=battleScript==='hira'?hiraExtra:kataExtra;buildKanaKeyboard(cols,extras,'battleKanaTable','battleExtraPanel',battleAddChar,battleApplyMark,false);refreshBattleKeyboard()}
+function battleAddChar(ch,source){if(!battleActive)return;if(battleOpponent==='cpu'&&battleTurn===2)return;if(battleCurrent.length>=5){battleMessage('5もじまでだよ');return}if(battleGameType==='shiritori'&&battleCurrent.length===0&&battleRequiredStart){const canBecome=ch===battleRequiredStart||dakuten[ch]===battleRequiredStart||handakuten[ch]===battleRequiredStart;if(!canBecome){battleMessage('「'+battleRequiredStart+'」から はじめよう');return}}if(battleUseMode==='vanish'&&(battleUsedSources.has(source)||battleCurrentSources.includes(source)))return;battleCurrent.push(ch);battleCurrentSources.push(source);updateBattleCurrent();refreshBattleKeyboard();battleMessage('')}
+function battleApplyMark(type){if(!battleActive)return;if(!battleCurrent.length){battleMessage('さきに もじを えらんでね');return}const i=battleCurrent.length-1,map=type==='dakuten'?dakuten:handakuten;if(!map[battleCurrent[i]]){battleMessage('その もじには つけられないよ');return}battleCurrent[i]=map[battleCurrent[i]];updateBattleCurrent()}
+function battleUndo(){if(!battleActive||!battleCurrent.length)return;battleCurrent.pop();battleCurrentSources.pop();updateBattleCurrent();refreshBattleKeyboard();battleMessage('')}
+function battleClear(){if(!battleActive)return;battleCurrent=[];battleCurrentSources=[];updateBattleCurrent();refreshBattleKeyboard();battleMessage('')}
+function updateBattleCurrent(){document.getElementById('battleCurrent').textContent=battleCurrent.join('')}
+function battleMessage(text){document.getElementById('battleMessage').textContent=text}
+function battleSubmit(){if(!battleActive)return;if(battleOpponent==='cpu'&&battleTurn===2)return;const word=battleCurrent.join('');if(word.length<2){battleMessage('2もじいじょうの ことばを つくろう');return}const allUsed=[...battleWords[0],...battleWords[1]];if(allUsed.includes(word)){battleMessage('その ことばは もう つかったよ');return}if(battleGameType==='shiritori'&&battleRequiredStart&&word[0]!==battleRequiredStart){battleMessage('「'+battleRequiredStart+'」から はじめよう');return}if(!isValidLocalWord_(word)){battleMessage('じしょにある ことばを つくろう');return}const index=battleTurn-1;let point=pointsFor(word);if(battleUseMode==='vanish')point*=2;battleWords[index].push(word);battleScores[index]+=point;if(battleUseMode==='vanish')battleCurrentSources.forEach(x=>battleUsedSources.add(x));updateBattleShiritori(word);showSuccessFlash('💮 ＋'+point+'てん！');battleCurrent=[];battleCurrentSources=[];if(battleOpponent==='human'){battleTurn=battleTurn===1?2:1;updateBattleDisplay()}else{battleTurn=2;updateBattleDisplay();setBattleKeyboardEnabled(false);setTimeout(()=>{if(battleActive)cpuTurn()},700)}}
+function updateBattleShiritori(word){if(battleGameType!=='shiritori')return;const last=word[word.length-1],n=battleScript==='hira'?'ん':'ン';if(last===n){const index=battleTurn-1;battleScores[index]=Math.max(0,battleScores[index]-10);battleRequiredStart='';battleMessage('「'+n+'」で おわった！ −10てん')}else battleRequiredStart=normalizeShiritoriStart(last)}
+function cpuTurn(){
+ if(!battleActive)return;const usedWords=new Set([...battleWords[0],...battleWords[1]].map(normalizeDictionaryWord_)),candidates=[];
+ for(const hira of cpuWordList){const word=battleScript==='kata'?hiraToKata_(hira):hira;if(usedWords.has(normalizeDictionaryWord_(word)))continue;if(battleGameType==='shiritori'&&battleRequiredStart&&word[0]!==battleRequiredStart)continue;if(battleUseMode==='vanish'&&!canCpuUseWord(word))continue;candidates.push(word)}
+ if(!candidates.length){battleMessage('コンピューターは ことばが みつからなかったよ');battleTurn=1;setBattleKeyboardEnabled(true);updateBattleDisplay();return}
+ const word=candidates[Math.floor(Math.random()*candidates.length)];let point=pointsFor(word);if(battleUseMode==='vanish')point*=2;battleWords[1].push(word);battleScores[1]+=point;if(battleUseMode==='vanish')getWordSources(word).forEach(x=>battleUsedSources.add(x));document.getElementById('battleCurrent').textContent=word;if(battleGameType==='shiritori')updateBattleShiritori(word);battleMessage('コンピューターの ことば！');
+ setTimeout(()=>{if(!battleActive)return;battleCurrent=[];battleCurrentSources=[];battleTurn=1;updateBattleDisplay();setBattleKeyboardEnabled(true);refreshBattleKeyboard();battleMessage('')},1100);
+}
+function getSourceChar(ch){return SOURCE_MAP[ch]||ch}
+function getWordSources(word){return [...word].map(getSourceChar)}
+function canCpuUseWord(word){const sources=getWordSources(word),temp=new Set();for(const source of sources){if(battleUsedSources.has(source)||temp.has(source))return false;temp.add(source)}return true}
+function refreshBattleKeyboard(){document.querySelectorAll('#battleKanaTable .kanaBtn[data-char]').forEach(b=>{const ch=b.dataset.char;b.disabled=!battleActive||(battleUseMode==='vanish'&&(battleUsedSources.has(ch)||battleCurrentSources.includes(ch)))})}
+function hiraToKata_(text){return [...text].map(ch=>{const c=ch.charCodeAt(0);return c>=0x3041&&c<=0x3096?String.fromCharCode(c+0x60):ch}).join('')}
+function setBattleKeyboardEnabled(enabled){document.querySelectorAll('#battleKanaTable button,#battleExtraPanel button,.battleControls button').forEach(b=>b.disabled=!enabled);if(enabled)refreshBattleKeyboard()}
+function updateBattleDisplay(){
+ document.getElementById('player1Score').textContent=battleScores[0]+'てん';document.getElementById('player2Score').textContent=battleScores[1]+'てん';renderBattleWords(0,'player1Words');renderBattleWords(1,'player2Words');document.getElementById('player1Panel').classList.toggle('activeTurn',battleTurn===1);document.getElementById('player2Panel').classList.toggle('activeTurn',battleTurn===2);
+ document.getElementById('battleTurnLabel').textContent=battleOpponent==='cpu'?(battleTurn===1?'あなたの ばん':'コンピューターの ばん'):(battleTurn===1?'プレイヤー1の ばん':'プレイヤー2の ばん');
+ let rule=(battleScript==='hira'?'ひらがな':'カタカナ')+' ／ '+(battleGameType==='shiritori'?'しりとり':'ことば')+' ／ '+(battleUseMode==='vanish'?'もじが きえる':'もじが のこる');if(battleTimeMode==='minute')rule+=' ／ ⏱1分';if(battleGameType==='shiritori'&&battleRequiredStart)rule+='　「'+battleRequiredStart+'」から';document.getElementById('battleRuleLabel').textContent=rule;updateBattleCurrent();refreshBattleKeyboard();
+}
+function renderBattleWords(index,id){const box=document.getElementById(id);box.innerHTML='';battleWords[index].forEach(word=>{const chip=document.createElement('div');chip.className='wordChip';chip.textContent=word;box.appendChild(chip)});box.scrollTop=box.scrollHeight}
+function finishBattle(){if(!battleActive)return;stopCountdown();battleActive=false;setBattleKeyboardEnabled(false);const a=battleScores[0],b=battleScores[1];let text;if(a>b)text=battleOpponent==='cpu'?'あなたの かち！':'プレイヤー1の かち！';else if(b>a)text=battleOpponent==='cpu'?'コンピューターの かち！':'プレイヤー2の かち！';else text='ひきわけ！';document.getElementById('finishScore').textContent=a+' － '+b;document.getElementById('finishMessage').textContent=text;document.getElementById('finishOverlay').classList.add('show')}
+
+function openHelp(){stopCountdown();gameActive=false;battleActive=false;showScreen('helpScreen');showHelp('student')}
+function showHelp(type){document.getElementById('studentHelpBtn').classList.toggle('selected',type==='student');document.getElementById('teacherHelpBtn').classList.toggle('selected',type==='teacher');const box=document.getElementById('helpContent');box.innerHTML='';HELP_DATA[type].forEach(item=>{const section=document.createElement('div');section.className='helpSection';const h=document.createElement('h2');h.textContent=item.title;const p=document.createElement('p');p.textContent=item.text;section.appendChild(h);section.appendChild(p);box.appendChild(section)});box.scrollTop=0}
+function showSuccessFlash(text){const o=document.getElementById('successFlash');document.getElementById('successFlashInner').textContent=text;o.classList.add('show');clearTimeout(showSuccessFlash.timer);showSuccessFlash.timer=setTimeout(()=>o.classList.remove('show'),1000)}
+function showMessage(msg){document.getElementById('message').textContent=msg}
+function clearMessage(){document.getElementById('message').textContent=''}
+function closeFinish(){document.getElementById('finishOverlay').classList.remove('show');if(document.getElementById('battleScreen').classList.contains('active'))startBattle();else startGame()}
+function goTopFromFinish(){document.getElementById('finishOverlay').classList.remove('show');goTop()}
+
+function showKatakanaMenu(){document.getElementById('topScreen').innerHTML='<button class="sn-btn helpBtn" onclick="openHelp()">？ つかいかた</button><h1 class="sn-title katakanaMenuTitle">カタカナチャレンジャー</h1><div class="topBtns" style="grid-template-columns:repeat(2,minmax(300px,360px))"><button class="sn-btn bigBtn hira" onclick="chooseGame(\'word\',\'kata\')"><div class="bigBtnMain">😊 ことば</div><div class="bigBtnSub">チャレンジ</div></button><button class="sn-btn bigBtn shiri" onclick="chooseGame(\'shiritori\',\'kata\')"><div class="bigBtnMain">😊 しりとり</div><div class="bigBtnSub">チャレンジ</div></button></div><button class="sn-home-btn" onclick="restoreTop()">← もどる</button>'}
+function restoreTop(){document.getElementById('topScreen').innerHTML='<button class="sn-btn helpBtn" onclick="openHelp()">？ つかいかた</button><h1 class="sn-title">ことばチャレンジャー</h1><div class="topBtns"><button class="sn-btn bigBtn hira" onclick="chooseGame(\'word\',\'hira\')"><div class="bigBtnMain">😊 50音</div><div class="bigBtnSub">チャレンジャー</div></button><button class="sn-btn bigBtn shiri" onclick="chooseGame(\'shiritori\',\'hira\')"><div class="bigBtnMain">😊 しりとり</div><div class="bigBtnSub">チャレンジャー</div></button><button class="sn-btn bigBtn kata" onclick="showKatakanaMenu()"><div class="bigBtnMain">😊 カタカナ</div><div class="bigBtnSub">チャレンジャー</div></button><button class="sn-btn bigBtn battle" onclick="openBattleSetup()"><div class="bigBtnMain">😀 対戦 😊</div><div class="bigBtnSub">チャレンジャー</div></button></div>'}
+
+document.addEventListener('click',function(e){if(!e.target.closest('button')){e.preventDefault();e.stopPropagation()}},true);
+loadDictionary();
+</script>
+</body>
+</html>
